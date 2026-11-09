@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+.streamlit/secrets.toml
+runs/
+raw_outputs/
+comparison/
+submission/
+output/
+tmp/
+*.json
+*.jsonl
+*.csv
+*.html
+*.pdf
+*.zip
+!sample_input.zip
