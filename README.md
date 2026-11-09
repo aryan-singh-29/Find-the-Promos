@@ -15,6 +15,8 @@ streamlit run app.py
 
 Choose **Invented demo** and click **Find promos**, or upload a ZIP containing `episode-001.txt`, `episode-002.txt`, etc. The app runs in a temporary folder, then shows ranked results and lets you download the JSON, CSV, and complete raw output bundle. The ZIP must contain at least one UTF-8 `.txt` episode with a numbered filename; cross-episode proposals require at least two adjacent numbered episodes. Uploads are limited to 20 MB compressed and 100 MB uncompressed.
 
+The **Maximum promos to return** slider is an upper limit. The ranker keeps at most one result per adjacent episode pair and can return fewer when cuts fail its checks. The two-episode invented demo has only one eligible pair, so it always returns at most one ranked promo; a longer input can return more. Change the slider, then click **Find promos** to start a new run.
+
 Each episode uses screenplay lines such as:
 
 ```text

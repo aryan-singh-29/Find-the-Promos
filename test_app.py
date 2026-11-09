@@ -22,6 +22,12 @@ class DemoRunTest(unittest.TestCase):
         self.assertEqual([segment["episode"] for segment in first["segments"]], [1, 2])
         self.assertTrue(first["hook"] and first["cliffhanger"] and first["why_it_works"] and first["post_first_reason"])
         self.assertEqual(len(app.get("download_button")), 3)
+        self.assertGreaterEqual(len(app.info), 1)
+        app.slider[0].set_value(1).run()
+        self.assertFalse(app.exception)
+        self.assertFalse("promo_result" in app.session_state)
+        app.button[0].click().run()
+        self.assertEqual(len(app.session_state["promo_result"]["ranked"]), 1)
 
 
 if __name__ == "__main__":

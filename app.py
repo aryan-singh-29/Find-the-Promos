@@ -21,6 +21,11 @@ MAX_TOTAL_UNCOMPRESSED = 100 * 1024 * 1024
 MAX_MEMBER_UNCOMPRESSED = 30 * 1024 * 1024
 
 
+def clear_previous_run() -> None:
+    """A changed input or limit should not leave old results on screen."""
+    st.session_state.pop("promo_result", None)
+
+
 def check_zip(data: bytes) -> None:
     if len(data) > MAX_UPLOAD_BYTES:
         raise ValueError("ZIP exceeds the 20 MB upload limit.")
@@ -79,12 +84,18 @@ st.write(
 
 with st.sidebar:
     st.header("Run settings")
-    source_mode = st.radio("Input", ["Invented demo", "Upload my ZIP"], index=0)
+    source_mode = st.radio("Input", ["Invented demo", "Upload my ZIP"], index=0, on_change=clear_previous_run)
     upload = None
     if source_mode == "Upload my ZIP":
         upload = st.file_uploader("Screenplay ZIP", type=["zip"])
         st.caption("Public hosting processes uploads on the app server. Use the local CLI for confidential scripts.")
-    top = st.slider("Maximum promos", min_value=1, max_value=20, value=10)
+    top = st.slider(
+        "Maximum promos to return", min_value=1, max_value=20, value=10,
+        help="Upper limit, not a target. The tool may find fewer, and keeps at most one promo per adjacent episode pair.",
+        on_change=clear_previous_run,
+    )
+    if source_mode == "Invented demo":
+        st.caption("This two-episode demo has only one adjacent episode pair, so it can return at most one ranked promo.")
     run_clicked = st.button("Find promos", type="primary", use_container_width=True)
     st.divider()
     st.caption("Input: episode-NNN.txt files with SCENE markers and timed dialogue/action lines. See README for the exact format.")
@@ -105,7 +116,7 @@ if run_clicked:
 
 result = st.session_state.get("promo_result")
 if result is None:
-    st.info("Select the invented demo and click **Find promos** to see a complete run.")
+    st.info("Click **Find promos** to run with the current input and maximum.")
     st.stop()
 
 report = result["report"]
@@ -116,6 +127,12 @@ metric_cols[0].metric("Episodes", report["episodes"])
 metric_cols[1].metric("Stitched candidates", report["cross_episode_candidate_count"])
 metric_cols[2].metric("Ranked promos", len(ranked))
 metric_cols[3].metric("Cut checks failed", len(validation["failures"]))
+if len(ranked) < top:
+    st.info(
+        f"Found {len(ranked)} ranked promo{'s' if len(ranked) != 1 else ''} with a maximum of {top}. "
+        "The maximum is a cap; cuts still need to pass the source and continuity checks, "
+        "and ranking keeps at most one promo per adjacent episode pair."
+    )
 
 st.subheader("What to post first")
 st.caption("Ranked by timed hook, unresolved ending, and lexical continuity. Every join needs a cold-viewer and footage review.")
